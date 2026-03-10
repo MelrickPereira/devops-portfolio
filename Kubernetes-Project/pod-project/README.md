@@ -219,7 +219,7 @@ kubectl describe pod nginx-pod
 
 ------------------------------------------------------------------------
 
-## 📸 Suggested Screenshots
+## 📸 Screenshots
 
 Add screenshots of:
 
@@ -228,11 +228,9 @@ Add screenshots of:
 3.  Nginx running in browser
 4.  Pod deployment command
 
-These help make the project more presentable on GitHub.
-
 ------------------------------------------------------------------------
 
-## 📌 Resume Description Example
+## 📌  Description:
 
 Deployed a containerized application using Kubernetes Pods on a local
 Minikube cluster, managed using kubectl and Docker.
