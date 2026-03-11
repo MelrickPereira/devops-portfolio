@@ -105,7 +105,96 @@ target/k8s-demo-1.0.jar
 ```
 
 ---
+Maven pom.xml Configuration
 
+The pom.xml (Project Object Model) file is the core configuration file used by Apache Maven.
+It defines how the project is built, its dependencies, plugins, and deployment configuration.
+
+In this project, the pom.xml is responsible for:
+
+Defining project metadata
+
+Managing dependencies
+
+Configuring build plugins
+
+Packaging the application into a JAR file
+
+Deploying artifacts to Sonatype Nexus Repository Manager
+
+Example pom.xml Structure
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.devops</groupId>
+  <artifactId>k8s-demo</artifactId>
+  <version>1.0</version>
+
+</project>
+Key Elements Explained
+Element	Purpose
+groupId	Organization or company identifier
+artifactId	Name of the application
+version	Version of the build
+dependencies	Libraries required by the project
+build	Build configuration
+plugins	Maven plugins used during build
+distributionManagement	Defines where artifacts are deployed (Nexus)
+Build Configuration
+
+The pom.xml configures the Java compiler and packaging.
+
+Example:
+
+<build>
+  <plugins>
+    <plugin>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.13.0</version>
+      <configuration>
+        <source>17</source>
+        <target>17</target>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+
+This ensures the project is compiled using Java 17.
+
+Artifact Deployment
+
+The project is configured to upload build artifacts to Sonatype Nexus Repository Manager.
+
+Example configuration:
+
+<distributionManagement>
+  <repository>
+    <id>nexus</id>
+    <url>http://localhost:8081/repository/maven-releases/</url>
+  </repository>
+</distributionManagement>
+
+This allows the following command to deploy the artifact:
+
+mvn deploy
+Role of pom.xml in the DevOps Pipeline
+
+In this project pipeline:
+
+GitHub
+   ↓
+Maven Build (pom.xml)
+   ↓
+Nexus Artifact Repository
+   ↓
+Docker Image
+   ↓
+Docker Hub
+   ↓
+Kubernetes Deployment
+
+The pom.xml acts as the central build configuration that automates the application packaging process.
 # Step 2 – Run Nexus Repository
 
 Run Nexus using Docker:
