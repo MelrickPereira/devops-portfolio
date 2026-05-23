@@ -1,0 +1,85 @@
+---
+- name: Ensure Prometheus config directory exists
+  file:
+    path: /etc/prometheus
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy Prometheus config to target host
+  copy:
+    src: "{{ playbook_dir }}/../monitoring/prometheus.yml"
+    dest: /etc/prometheus/prometheus.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create Docker network for monitoring stack
+  shell: |
+    if ! docker network inspect logsentinel-net >/dev/null 2>&1; then
+      docker network create logsentinel-net
+    fi
+  args:
+    executable: /bin/bash
+
+- name: Deploy Prometheus Docker container
+  shell: |
+    if docker ps -a --format '{{.Names}}' | grep -q '^logsentinel_prometheus$'; then
+      docker rm -f logsentinel_prometheus
+    fi
+    docker run -d \
+      --name logsentinel_prometheus \
+      --network logsentinel-net \
+      -p 9090:9090 \
+      -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro \
+      prom/prometheus:latest \
+      --config.file=/etc/prometheus/prometheus.yml
+  args:
+    executable: /bin/bash
+
+- name: Deploy Node Exporter Docker container
+  shell: |
+    if docker ps -a --format '{{.Names}}' | grep -q '^logsentinel_node_exporter$'; then
+      docker rm -f logsentinel_node_exporter
+    fi
+    docker run -d \
+      --name logsentinel_node_exporter \
+      --network logsentinel-net \
+      -p 9100:9100 \
+      -v /:/host:ro \
+      prom/node-exporter:latest \
+      --path.rootfs=/host
+  args:
+    executable: /bin/bash
+
+- name: Deploy Pushgateway Docker container
+  shell: |
+    if docker ps -a --format '{{.Names}}' | grep -q '^logsentinel_pushgateway$'; then
+      docker rm -f logsentinel_pushgateway
+    fi
+    docker run -d \
+      --name logsentinel_pushgateway \
+      --network logsentinel-net \
+      -p 9091:9091 \
+      prom/pushgateway:latest
+  args:
+    executable: /bin/bash
+
+- name: Deploy Grafana Docker container
+  shell: |
+    if docker ps -a --format '{{.Names}}' | grep -q '^logsentinel_grafana$'; then
+      docker rm -f logsentinel_grafana
+    fi
+    docker run -d \
+      --name logsentinel_grafana \
+      --network logsentinel-net \
+      -p 3000:3000 \
+      -e GF_SECURITY_ADMIN_USER=admin \
+      -e GF_SECURITY_ADMIN_PASSWORD=admin \
+      -e GF_USERS_ALLOW_SIGN_UP=false \
+      -v "{{ playbook_dir }}/../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro" \
+      -v "{{ playbook_dir }}/../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro" \
+      grafana/grafana:latest
+  args:
+    executable: /bin/bash

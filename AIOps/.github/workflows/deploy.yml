@@ -1,0 +1,43 @@
+name: Deploy LogSentinel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy via Ansible
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Prepare Vault password file
+        if: secrets.ANSIBLE_VAULT_PASSWORD != ''
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault-pass
+
+      - name: Show inventory path
+        run: |
+          ls -R ansible
+          ansible-playbook --version
+
+      - name: Run Ansible playbook
+        run: |
+          if [ -f .vault-pass ]; then
+            ansible-playbook -i ansible/inventories/dev/hosts.yml ansible/site.yml --vault-password-file .vault-pass
+          else
+            ansible-playbook -i ansible/inventories/dev/hosts.yml ansible/site.yml
+          fi
