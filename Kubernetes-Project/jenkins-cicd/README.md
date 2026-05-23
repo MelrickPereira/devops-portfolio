@@ -197,7 +197,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/yourusername/jenkins-ci-cd-project.git'
+                git 'https://github.com/MelrickPereira/jenkins-ci-cd-project.git'
             }
         }
 
@@ -209,13 +209,13 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t dockerhub-username/java-app .'
+                sh 'docker build -t dockerhub-melrick/java-app .'
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                sh 'docker push dockerhub-username/java-app'
+                sh 'docker push dockerhub-melrick/java-app'
             }
         }
 
