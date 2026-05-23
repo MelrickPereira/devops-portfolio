@@ -1,297 +1,136 @@
-# 🚀 Jenkins CI/CD Pipeline with Docker and Kubernetes
+# Jenkins-Zero-To-Hero
 
-## 📌 Project Overview
+Are you looking forward to learn Jenkins right from Zero(installation) to Hero(Build end to end pipelines)? then you are at the right place. 
 
-This project demonstrates a **complete DevOps CI/CD pipeline** using **Jenkins, Docker, and Kubernetes**.
-The pipeline automatically builds, containerizes, and deploys an application whenever code is pushed to the repository.
+## Installation on EC2 Instance
 
-This project simulates a real-world DevOps workflow where code moves from development to deployment automatically.
+YouTube Video ->
+https://www.youtube.com/watch?v=zZfhAXfBvVA&list=RDCMUCnnQ3ybuyFdzvgv2Ky5jnAA&index=1
 
----
 
-# 🏗️ Architecture
+![Screenshot 2023-02-01 at 5 46 14 PM](https://user-images.githubusercontent.com/43399466/216040281-6c8b89c3-8c22-4620-ad1c-8edd78eb31ae.png)
 
-```
-Developer → GitHub → Jenkins Pipeline → Docker → Kubernetes (Minikube)
-```
+Install Jenkins, configure Docker as agent, set up cicd, deploy applications to k8s and much more.
 
-1. Developer pushes code to GitHub
-2. Jenkins pipeline triggers
-3. Jenkins builds the application
-4. Docker image is created
-5. Image is pushed to DockerHub
-6. Application is deployed to Kubernetes
+## AWS EC2 Instance
 
----
+- Go to AWS Console
+- Instances(running)
+- Launch instances
 
-# 🛠️ Technologies Used
+<img width="994" alt="Screenshot 2023-02-01 at 12 37 45 PM" src="https://user-images.githubusercontent.com/43399466/215974891-196abfe9-ace0-407b-abd2-adcffe218e3f.png">
 
-* Jenkins
-* Git & GitHub
-* Maven
-* Docker
-* DockerHub
-* Kubernetes
-* Minikube
-* Linux (Ubuntu)
+### Install Jenkins.
 
----
+Pre-Requisites:
+ - Java (JDK)
 
-# 📂 Project Structure
+### Run the below commands to install Java and Jenkins
 
-```
-jenkins-ci-cd-project
-│
-├── src/
-│
-├── pom.xml
-│
-├── Dockerfile
-│
-├── Jenkinsfile
-│
-└── k8s-deployment.yaml
-```
-
----
-
-# ⚙️ Jenkins Setup
-
-### 1️⃣ Install Jenkins
-
-Install Jenkins on Ubuntu and start the service.
+Install Java
 
 ```
 sudo apt update
-sudo apt install jenkins
-sudo systemctl start jenkins
+sudo apt install openjdk-17-jre
 ```
 
-Open Jenkins:
+Verify Java is Installed
 
 ```
-http://localhost:8080
+java -version
 ```
 
----
-
-### 2️⃣ Unlock Jenkins
-
-Retrieve the initial admin password:
+Now, you can proceed with installing Jenkins
 
 ```
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins
 ```
 
-Paste it into the Jenkins UI.
+**Note: ** By default, Jenkins will not be accessible to the external world due to the inbound traffic restriction by AWS. Open port 8080 in the inbound traffic rules as show below.
 
----
+- EC2 > Instances > Click on <Instance-ID>
+- In the bottom tabs -> Click on Security
+- Security groups
+- Add inbound traffic rules as shown in the image (you can just allow TCP 8080 as well, in my case, I allowed `All traffic`).
 
-### 3️⃣ Install Suggested Plugins
+<img width="1187" alt="Screenshot 2023-02-01 at 12 42 01 PM" src="https://user-images.githubusercontent.com/43399466/215975712-2fc569cb-9d76-49b4-9345-d8b62187aa22.png">
 
-Click **Install Suggested Plugins** during setup.
 
-Important plugins installed:
+### Login to Jenkins using the below URL:
 
-* Git Plugin
-* Pipeline Plugin
-* Docker Pipeline Plugin
-* Maven Integration Plugin
+http://<ec2-instance-public-ip-address>:8080    [You can get the ec2-instance-public-ip-address from your AWS EC2 console page]
 
----
+Note: If you are not interested in allowing `All Traffic` to your EC2 instance
+      1. Delete the inbound traffic rule for your instance
+      2. Edit the inbound traffic rule to only allow custom TCP port `8080`
+  
+After you login to Jenkins, 
+      - Run the command to copy the Jenkins Admin Password - `sudo cat /var/lib/jenkins/secrets/initialAdminPassword`
+      - Enter the Administrator password
+      
+<img width="1291" alt="Screenshot 2023-02-01 at 10 56 25 AM" src="https://user-images.githubusercontent.com/43399466/215959008-3ebca431-1f14-4d81-9f12-6bb232bfbee3.png">
 
-### 4️⃣ Create Admin User
+### Click on Install suggested plugins
 
-Create your Jenkins admin account.
+<img width="1291" alt="Screenshot 2023-02-01 at 10 58 40 AM" src="https://user-images.githubusercontent.com/43399466/215959294-047eadef-7e64-4795-bd3b-b1efb0375988.png">
 
-Example:
+Wait for the Jenkins to Install suggested plugins
 
-```
-Username: admin
-Password: ********
-Full Name: Melrick Pereira
-Email: your-email
-```
+<img width="1291" alt="Screenshot 2023-02-01 at 10 59 31 AM" src="https://user-images.githubusercontent.com/43399466/215959398-344b5721-28ec-47a5-8908-b698e435608d.png">
 
----
+Create First Admin User or Skip the step [If you want to use this Jenkins instance for future use-cases as well, better to create admin user]
 
-# ⚙️ Configure Jenkins Tools
+<img width="990" alt="Screenshot 2023-02-01 at 11 02 09 AM" src="https://user-images.githubusercontent.com/43399466/215959757-403246c8-e739-4103-9265-6bdab418013e.png">
 
-Go to:
+Jenkins Installation is Successful. You can now starting using the Jenkins 
 
-```
-Manage Jenkins → Global Tool Configuration
-```
+<img width="990" alt="Screenshot 2023-02-01 at 11 14 13 AM" src="https://user-images.githubusercontent.com/43399466/215961440-3f13f82b-61a2-4117-88bc-0da265a67fa7.png">
 
-Add the following tools:
+## Install the Docker Pipeline plugin in Jenkins:
 
-### Git
+   - Log in to Jenkins.
+   - Go to Manage Jenkins > Manage Plugins.
+   - In the Available tab, search for "Docker Pipeline".
+   - Select the plugin and click the Install button.
+   - Restart Jenkins after the plugin is installed.
+   
+<img width="1392" alt="Screenshot 2023-02-01 at 12 17 02 PM" src="https://user-images.githubusercontent.com/43399466/215973898-7c366525-15db-4876-bd71-49522ecb267d.png">
 
-```
-Name: Git
-```
+Wait for the Jenkins to be restarted.
 
-### Maven
 
-```
-Name: Maven3
-Install Automatically: Enabled
-```
+## Docker Slave Configuration
 
----
-
-# 🐳 Dockerfile
-
-This Dockerfile packages the application into a container.
+Run the below command to Install Docker
 
 ```
-FROM openjdk:17-jdk-slim
-WORKDIR /app
-COPY target/*.jar app.jar
-ENTRYPOINT ["java","-jar","app.jar"]
+sudo apt update
+sudo apt install docker.io
 ```
-
----
-
-# ☸️ Kubernetes Deployment
-
-`k8s-deployment.yaml`
+ 
+### Grant Jenkins user and Ubuntu user permission to docker deamon.
 
 ```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: java-app
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: java-app
-  template:
-    metadata:
-      labels:
-        app: java-app
-    spec:
-      containers:
-      - name: java-app
-        image: dockerhub-username/java-app:latest
-        ports:
-        - containerPort: 8080
+sudo su - 
+usermod -aG docker jenkins
+usermod -aG docker ubuntu
+systemctl restart docker
 ```
 
----
-
-# 🔄 Jenkins Pipeline
-
-`Jenkinsfile`
+Once you are done with the above steps, it is better to restart Jenkins.
 
 ```
-pipeline {
-    agent any
-
-    tools {
-        maven 'Maven3'
-    }
-
-    stages {
-
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/yourusername/jenkins-ci-cd-project.git'
-            }
-        }
-
-        stage('Build Application') {
-            steps {
-                sh 'mvn clean package'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t dockerhub-username/java-app .'
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                sh 'docker push dockerhub-username/java-app'
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh 'kubectl apply -f k8s-deployment.yaml'
-            }
-        }
-
-    }
-}
+http://<ec2-instance-public-ip>:8080/restart
 ```
 
----
+The docker agent configuration is now successful.
 
-# ▶️ Running the Pipeline
 
-Start Minikube:
 
-```
-minikube start
-```
 
-Verify Kubernetes cluster:
-
-```
-kubectl get nodes
-```
-
-Run the Jenkins pipeline:
-
-```
-Build Now
-```
-
----
-
-# 🔍 Verify Deployment
-
-Check pods:
-
-```
-kubectl get pods
-```
-
-Check services:
-
-```
-kubectl get svc
-```
-
----
-
-# 📈 CI/CD Pipeline Stages
-
-| Stage        | Description                        |
-| ------------ | ---------------------------------- |
-| Clone        | Jenkins pulls code from GitHub     |
-| Build        | Maven compiles the project         |
-| Docker Build | Docker image is created            |
-| Docker Push  | Image pushed to DockerHub          |
-| Deploy       | Application deployed to Kubernetes |
-
----
-
-# 🚀 Future Improvements
-
-* Add **SonarQube for code quality analysis**
-* Add **automated unit tests**
-* Configure **GitHub Webhooks**
-* Implement **Helm charts**
-* Add **monitoring using Prometheus & Grafana**
-
----
-
-# 👨‍💻 Author
-
-**Melrick Pereira**
-Computer Engineer | DevOps Enthusiast
