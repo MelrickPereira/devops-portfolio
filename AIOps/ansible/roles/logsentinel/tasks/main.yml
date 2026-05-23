@@ -1,0 +1,4 @@
+---
+- name: Placeholder for LogSentinel application deployment
+  debug:
+    msg: "LogSentinel application deployment tasks will be added in later phases."

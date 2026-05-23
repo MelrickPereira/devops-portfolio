@@ -1,0 +1,58 @@
+---
+- name: Secure MySQL installation by setting root password (Debian)
+  debconf:
+    name: mysql-server
+    question: "mysql-server/root_password"
+    value: "{{ db_root_password }}"
+    vtype: password
+  when: ansible_os_family == 'Debian'
+
+- name: Secure MySQL installation by confirming root password (Debian)
+  debconf:
+    name: mysql-server
+    question: "mysql-server/root_password_again"
+    value: "{{ db_root_password }}"
+    vtype: password
+  when: ansible_os_family == 'Debian'
+
+- name: Install Apache, MySQL, and PHP packages on Debian-based systems
+  apt:
+    name:
+      - apache2
+      - mysql-server
+      - php
+      - libapache2-mod-php
+      - php-mysql
+    state: present
+    update_cache: yes
+  when: ansible_os_family == 'Debian'
+
+- name: Install Apache, MariaDB, and PHP packages on RedHat-based systems
+  yum:
+    name:
+      - httpd
+      - mariadb-server
+      - php
+      - php-mysqlnd
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: Ensure Apache service is running
+  service:
+    name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+    state: started
+    enabled: yes
+
+- name: Ensure MySQL/MariaDB service is running
+  service:
+    name: "{{ 'mysql' if ansible_os_family == 'Debian' else 'mariadb' }}"
+    state: started
+    enabled: yes
+
+- name: Create LogSentinel database and user
+  shell: |
+    mysql -u root -p"{{ db_root_password }}" -e "CREATE DATABASE IF NOT EXISTS {{ db_name }}; CREATE USER IF NOT EXISTS '{{ db_user }}'@'%' IDENTIFIED BY '{{ db_password }}'; GRANT ALL PRIVILEGES ON {{ db_name }}.* TO '{{ db_user }}'@'%'; FLUSH PRIVILEGES;"
+  args:
+    executable: /bin/bash
+  become: yes
+  when: ansible_os_family == 'Debian'
