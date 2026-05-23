@@ -281,17 +281,11 @@ kubectl get svc
 
 ---
 
-# 🚀 Future Improvements
 
-* Add **SonarQube for code quality analysis**
-* Add **automated unit tests**
-* Configure **GitHub Webhooks**
-* Implement **Helm charts**
-* Add **monitoring using Prometheus & Grafana**
 
 ---
 
 # 👨‍💻 Author
 
 **Melrick Pereira**
-Computer Engineer | DevOps Enthusiast
+Computer Engineer
